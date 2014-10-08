@@ -1,42 +1,48 @@
 #!/usr/bin/python
 # -*- coding: iso-8859-15 -*-
 
-import sys
 from smallsmilhandler import SmallSMILHandler
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
+import sys
 import os
 
-try:
-    fichero = sys.argv[1]
-except IndexError:
-    print "Usage: python karaoke.py file.smil"
-    raise SystemExit
-try:
-    fich = open(fichero, 'r')
-    fich.close()
-except IOError:
-    print "Introduce un nombre correcto de fichero.smil"
-    raise SystemExit
 
-parser = make_parser()
-kHandler = SmallSMILHandler()
-parser.setContentHandler(kHandler)
-parser.parse(open(fichero))
+class KaraokeLocal():
 
-for sublista in range(len(kHandler.lista)):
-    linea = kHandler.lista[sublista]
-    tag = linea['name']
-    imprimir = tag
-    for atributo in kHandler.atributos[tag]:
-        if atributo == "src":
-            if linea[atributo][:7] == "http://":
-                recurso = linea[atributo]
-                os.system("wget -q " + recurso)
-                recurso_local = recurso.split('/')
-                linea[atributo] = recurso_local[-1]
-        if not linea[atributo] == "":
-            imprimir = imprimir + "\\t" + atributo
-            imprimir = imprimir + '="' + linea[atributo] + '"'
-    imprimir = imprimir + "\\n"
-    print imprimir
+    def __init__(self, fichero):
+        parser = make_parser()
+        self.kHandler = SmallSMILHandler()
+        parser.setContentHandler(self.kHandler)
+        parser.parse(open(fichero))
+        self.etiquetas = self.kHandler.get_tags()
+
+    def __str__(self):
+        for sublista in range(len(self.etiquetas)):
+            linea = self.etiquetas[sublista]
+            line = linea['name']
+            for atrib in self.kHandler.atributos[linea['name']]:
+                if not linea[atrib] == "":
+                    line = line + "\\t" + atrib + '="' + linea[atrib] + '"'
+            print line + "\\n"
+
+    def do_local(self):
+        for sublista in range(len(self.etiquetas)):
+            linea = self.etiquetas[sublista]
+            for atrib in self.kHandler.atributos[linea['name']]:
+                if atrib == "src":
+                    if linea[atrib][:7] == "http://":
+                        os.system("wget -q " + linea[atrib])
+                        linea[atrib] = linea[atrib].split('/')[-1]
+
+if __name__ == "__main__":
+    try:
+        fichero = sys.argv[1]
+    except IndexError:
+        print "Usage: python karaoke.py file.smil"
+        raise SystemExit
+
+    kLocal = KaraokeLocal(fichero)
+    kLocal.__str__()
+    kLocal.do_local()
+    kLocal.__str__()

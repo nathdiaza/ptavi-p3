@@ -18,13 +18,15 @@ class KaraokeLocal():
         self.etiquetas = self.kHandler.get_tags()
 
     def __str__(self):
+        imprimir = ""
         for sublista in range(len(self.etiquetas)):
             linea = self.etiquetas[sublista]
             line = linea['name']
             for atrib in self.kHandler.atributos[linea['name']]:
                 if not linea[atrib] == "":
-                    line = line + "\\t" + atrib + '="' + linea[atrib] + '"'
-            print line + "\\n"
+                    line = line + "\t" + atrib + '="' + linea[atrib] + '"'
+            imprimir = imprimir + line + "\n"
+        return imprimir
 
     def do_local(self):
         for sublista in range(len(self.etiquetas)):
@@ -43,6 +45,6 @@ if __name__ == "__main__":
         raise SystemExit
 
     kLocal = KaraokeLocal(fichero)
-    kLocal.__str__()
+    print kLocal.__str__()
     kLocal.do_local()
-    kLocal.__str__()
+    print kLocal.__str__()
